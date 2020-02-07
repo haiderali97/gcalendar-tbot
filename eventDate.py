@@ -8,22 +8,25 @@ class eventDate:
             self.tz = pytz.timezone(tz) 
         else:
             self.tz = None               
-
-        
-    def humanize(self,d,format):        
-        x = datetime.strptime(string[:19],"%Y-%m-%dT%H:%M:%S")
-        return x.strftime(format)
     
-    def getDate(self,op=None,num=None):
-        if op is not None:
-            if op == 'add':
-                cdate = datetime.combine(date.today(),time()).astimezone(self.tz) + timedelta(days = num)
-            if op == 'sub':
-                cdate = datetime.combine(date.today(),time()).astimezone(self.tz) - timedelta(days = num)
-        else:
-            cdate = cdate = datetime.combine(date.today(),time()).astimezone(self.tz)
-        return cdate.isoformat()
+    #Creates a datetime string for use with the google calendar api 
+    def createDate(self,year=None,month=None,day=None,opt=None,days=None):
+        now = datetime.now()
 
+        if month is None:
+            month = now.month
+        if year is None:
+            year = now.year 
+        if day is None:
+            day = now.day
+        dt = self.tz.localize(datetime(year,month,day)) 
+        if opt == "add":
+            dt += timedelta(days = days)
+        if opt == "sub":
+            dt += timedelta(days = days)        
+        return dt.isoformat()
+
+    # stuff
     @staticmethod
     def getMonthName(month=None):
         if month is None:
@@ -31,9 +34,8 @@ class eventDate:
         return calendar.month_name[month]
 
     # Returns an inline keyboard with dates for a specified month and year 
-    # The month attribute is used to calculate whether February is a leap year
-    @staticmethod
-    def generateCalendar(month=None,year=None):
+    # The month attribute is used to calculate whether February is a leap year    
+    def generateDayCalendar(self,month=None,year=None):
         if month is None:
             month = datetime.now().month
         if year is None:
@@ -49,7 +51,7 @@ class eventDate:
                 end = 30
             else:
                 end = 29        
-        dates = [InlineKeyboardButton(str(x).zfill(2),callback_data=str('dayevent_{}-{}-{}').format(year,month,x)) for x in range(1,end)]
+        dates = [InlineKeyboardButton(str(x).zfill(2), callback_data = "dayevent_{}_{}".format(self.createDate(year,month,x),self.createDate(year,month,x,opt='add',days=1)) ) for x in range(1,end)]
         n = 6 
         dates = [dates[i * n:(i + 1) * n] for i in range((len(dates) + n - 1) // n )] 
         return InlineKeyboardMarkup(dates)
