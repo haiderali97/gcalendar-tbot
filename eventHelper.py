@@ -1,14 +1,13 @@
+# Helper methods to generate keyboard, prettify responses
+
 import pytz
 from datetime import datetime, date, time, timedelta
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import calendar 
 
-class eventDate:
-    def __init__(self,tz = None):        
-        if tz is not None:
-            self.tz = pytz.timezone(tz) 
-        else:
-            self.tz = None               
+class eventHelper:
+    def __init__(self,tz):        
+        self.tz = pytz.timezone(tz)              
     
     #Creates a datetime string for use with the google calendar api 
     def createDate(self,year=None,month=None,day=None,opt=None,days=None):
@@ -33,6 +32,15 @@ class eventDate:
         if month is None:
             month = datetime.now().month 
         return calendar.month_name[month]
+
+    def prepareEventsMessage(events):
+        for x in events:
+            description = x['description'] if "description" is in x else None 
+            msg = (
+                f"Event Name: {x['summary']}\n"
+                f"Event Description: {x['description']}"
+            )            
+        return msg
 
     # Returns an inline keyboard with dates for a specified month and year 
     # The month attribute is used to calculate whether February is a leap year    
