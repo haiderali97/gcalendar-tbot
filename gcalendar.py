@@ -23,12 +23,12 @@ class gCalendar:
         self.calendarID = id
 
     # Get all events for today - the results are sorted by startTime   
-    def getEventsToday(self):        
+    def getEvents(self,startDate,endDate):        
         return self.service.events().list(
             calendarId=self.calendarID, 
             timeZone=self.timezone, 
-            timeMin=self.ed.getDate(), 
-            timeMax=self.ed.getDate('add',1),
+            timeMin=startDate, 
+            timeMax=endDate,
             singleEvents=True,
             orderBy="startTime"
         ).execute()

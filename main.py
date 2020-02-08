@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO,
 group_id = -390942838
 timezone = 'Asia/Kolkata'
 ed = eventDate(timezone)
-#cal = gCalendar(timezone='Asia/Kolkata')
+gCal = gCalendar(timezone='Asia/Kolkata')
 
 updater = Updater(token='735017680:AAESxPqvkT0UIv5pXrBmxG4QFyY-OyxroxM', use_context=True)
 dispatcher = updater.dispatcher
@@ -29,10 +29,11 @@ def dayEvents(update,context):
 def sendDayEvent(update, context):
     query = update.callback_query 
     date = query.data.split('_')
-    print(date)
+    events = gCal.getEvents(date[1],date[2])
+    pprint(events)
     
 
-dispatcher.add_handler(CommandHandler('dayEvents',monthEvents))
+dispatcher.add_handler(CommandHandler('dayEvents',dayEvents))
 dispatcher.add_handler(CallbackQueryHandler(sendDayEvent,pattern="^dayevent"))
 
 updater.start_polling()
