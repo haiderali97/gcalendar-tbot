@@ -33,12 +33,14 @@ class eventHelper:
             month = datetime.now().month 
         return calendar.month_name[month]
 
-    def prepareEventsMessage(events):
+    def prepareEventsMessage(self,events): 
+        msg = "-------EVENTS------\n\n"     
         for x in events:
-            description = x['description'] if "description" is in x else None 
-            msg = (
-                f"Event Name: {x['summary']}\n"
-                f"Event Description: {x['description']}"
+            description = x['description'] if "description" in x else None 
+            msg += (                
+                f"Event Name: {x['summary']}\n\n"
+                f"Event Description: {description}\n\n"
+                "-------------------------\n\n"
             )            
         return msg
 

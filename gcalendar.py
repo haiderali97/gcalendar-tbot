@@ -2,7 +2,8 @@ import pickle
 import os
 from apiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
-from eventDate import eventDate
+from eventHelper import eventHelper
+
 
 class gCalendar:
     def __init__(self,secretFile='client_secret.json',timezone = None):              
@@ -15,7 +16,7 @@ class gCalendar:
         credentials = pickle.load(open("token.pkl", "rb"))
         self.service = build("calendar", "v3", credentials=credentials)
         self.timezone = timezone
-        self.ed = eventDate(timezone)
+        self.eHelper = eventHelper(timezone)
         self.calendarID = 'primary'
 
     # By default the primary calendar is used, use this method to change to whatever calendar is required
