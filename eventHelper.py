@@ -9,7 +9,22 @@ class eventHelper:
     def __init__(self,tz):        
         self.tz = pytz.timezone(tz)              
     
-    #Creates a datetime string for use with the google calendar api 
+    ##Create a human readable time format for messages 
+    def __humanizeForMessage(self,date):
+        date = date[:19]
+        date = datetime.strptime(date,"%Y-%m-%dT%H:%M:%S")
+        return date.strftime("%b %d at %I:%M%p")
+
+    #Creates current timestamp for use with google calendar api
+    #This function is used to create a timestamp for recurring events
+    def createTime(self,minutes = None):
+        now = datetime.now()
+        now = now.replace(microsecond=0)
+        if minutes is not None: 
+            now += timedelta(minutes=minutes)
+        return self.tz.localize(now).isoformat()
+
+    #Creates a datetime string with time set to midnight for use with the google calendar api 
     def createDate(self,year=None,month=None,day=None,opt=None,days=None):
         now = datetime.now()
 
@@ -40,6 +55,8 @@ class eventHelper:
             msg += (                
                 f"Event Name: {x['summary']}\n\n"
                 f"Event Description: {description}\n\n"
+                f"Starts at: {self.__humanizeForMessage(x['start']['dateTime'])}\n\n"
+                f"Ends at: {self.__humanizeForMessage(x['end']['dateTime'])}\n\n"
                 "-------------------------\n\n"
             )            
         return msg
