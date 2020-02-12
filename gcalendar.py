@@ -1,5 +1,6 @@
 import pickle
 import os
+from pprint import pprint
 from apiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from eventHelper import eventHelper
@@ -34,24 +35,8 @@ class gCalendar:
             orderBy="startTime"
         ).execute()
         
-    def getEventsTomorrow(self):
-        return self.service.events().list(
-            calendarId=self.calendarID, 
-            timeZone=self.timezone, 
-            timeMin=self.ed.getDate('add',1), 
-            timeMax=self.ed.getDate('add',2),
-            singleEvents=True,
-            orderBy="startTime"
-        ).execute()
-
-    def getEventsYesterday(self):
-        return self.service.events().list(
-            calendarId=self.calendarID, 
-            timeZone=self.timezone, 
-            timeMin=self.ed.getDate('sub',2), 
-            timeMax=self.ed.getDate(),
-            singleEvents=True,
-            orderBy="startTime"
-        ).execute()        
+    def getCalendars(self):
+        calendars = self.service.calendarList().list().execute()
+        return calendars['items']       
 
 

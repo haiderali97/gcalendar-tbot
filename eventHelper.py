@@ -4,6 +4,7 @@ import pytz
 from datetime import datetime, date, time, timedelta
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import calendar 
+import base64
 
 class eventHelper:
     def __init__(self,tz):        
@@ -14,6 +15,12 @@ class eventHelper:
         date = date[:19]
         date = datetime.strptime(date,"%Y-%m-%dT%H:%M:%S")
         return date.strftime("%b %d at %I:%M%p")
+
+    #Returns current time in Hour:Minute format(24 hour clock)
+    def getCurrentTime(self):        
+        time = datetime.now()        
+        return time.strftime("%H:%M")
+
 
     #Creates current timestamp for use with google calendar api
     #This function is used to create a timestamp for recurring events
@@ -84,5 +91,10 @@ class eventHelper:
         dates = [dates[i * n:(i + 1) * n] for i in range((len(dates) + n - 1) // n )] 
         return InlineKeyboardMarkup(dates)
 
+    def generateCalendarOptions(self,calendars):
+        cals = [InlineKeyboardButton(cal['summary'],callback_data=f"sc_{cal['id']}") for cal in calendars]
+        n = 3
+        cals = [cals[i * n:(i + 1) * n] for i in range((len(cals) + n - 1) // n )]
+        return InlineKeyboardMarkup(cals)
 
 

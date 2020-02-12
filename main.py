@@ -7,7 +7,6 @@ from configparser import ConfigParser
 from pprint import pprint
 from gcalendar import gCalendar
 from eventHelper import eventHelper
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 config = ConfigParser()
 config.read('config.ini')
@@ -20,7 +19,6 @@ eHelper = eventHelper(config['DEFAULT']['Timezone'])
 gCal = gCalendar(timezone=config['DEFAULT']['Timezone'])
 updater = Updater(token=config['DEFAULT']['BotToken'], use_context=True)
 dispatcher = updater.dispatcher
-
 
 #This function is called with a scheduler and sends all of todays events
 def sendTodaysEvents():
@@ -37,6 +35,11 @@ def sendTodaysEvents():
 
 #This function is called with a scheduler reccuringly to send events of today within a timespan
 def sendRecurringEvents(): 
+    #Stop execution if time is same as the time to run sendTodaysEvents
+    if(eHelper.getCurrentTime() == config['EVENTS']['SendDailyTime']):
+        return 
+
+    print("Running event scan")    
     startDate = eHelper.createTime()
     endDate = eHelper.createTime(config.getint('EVENTS','RecurringTimespan'))    
     events = gCal.getEvents(startDate=startDate,endDate=endDate)['items']    
@@ -48,9 +51,26 @@ def sendRecurringEvents():
 #Generates a calendar for the current month
 def dayEvents(update,context):    
     context.bot.send_message(
-        chat_id=config['DEFAULT']['GroupID'],
+        chat_id=update.effective_chat.id,
         text="These are the dates for {}.\nPick a date for which you would like to see the events of.".format(eHelper.getMonthName()),
         reply_markup=eHelper.generateDayCalendar())
+
+def setCalendar(update, context):
+    calendars = gCal.getCalendars()    
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="Pick a calendar", 
+        reply_markup=eHelper.generateCalendarOptions(calendars)     
+    )
+
+def setCalendarID(update, context):
+    query = update.callback_query 
+    data = query.data.split('_')
+    gCal.setCalendarID(data[1])
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=f"Your calendar has changed to {data[1]}."        
+    )
 
 #Gets the events of a particular day and sends it
 def sendDayEvent(update, context):
@@ -64,10 +84,13 @@ def sendDayEvent(update, context):
         msg = "There are no events scheduled for this date."    
     query.edit_message_text(text=msg,reply_markup=eHelper.generateDayCalendar())
 
-    
+
+
     
 
 dispatcher.add_handler(CommandHandler('dayEvents',dayEvents))
+dispatcher.add_handler(CommandHandler('setCalendar',setCalendar))
+dispatcher.add_handler(CallbackQueryHandler(setCalendarID,pattern="^sc"))
 dispatcher.add_handler(CallbackQueryHandler(sendDayEvent,pattern="^dayevent"))
 
 if(config['EVENTS']['SendDaily'] == '1'):
@@ -78,14 +101,14 @@ if(config['EVENTS']['SendRecurring'] == '1'):
 
 
 """ TESTING """
-def mock_run_pending():
-    sendRecurringEvents()
+# def mock_run_pending():
+#     sendRecurringEvents()
 
-def mock_time_sleep(num):
-    exit()
+# def mock_time_sleep(num):
+#     exit()
 
-schedule.run_pending = mock_run_pending
-time.sleep = mock_time_sleep
+# schedule.run_pending = mock_run_pending
+# time.sleep = mock_time_sleep
 
 updater.start_polling()
 while True:
