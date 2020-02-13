@@ -1,10 +1,8 @@
 # Helper methods to generate keyboard, prettify responses
-
 import pytz
 from datetime import datetime, date, time, timedelta
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import calendar 
-import base64
 
 class eventHelper:
     def __init__(self,tz):        
