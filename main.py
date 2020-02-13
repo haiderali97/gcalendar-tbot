@@ -7,6 +7,7 @@ from configparser import ConfigParser
 from pprint import pprint
 from gcalendar import gCalendar
 from eventHelper import eventHelper
+from telegram import ParseMode
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 config = ConfigParser()
 config.read('config.ini')
@@ -49,11 +50,24 @@ def sendRecurringEvents():
         updater.bot.sendMessage(chat_id=config['DEFAULT']['GroupID'],text=msg)
 
 #Generates a calendar for the current month
-def dayEvents(update,context):    
+def dayCalendar(update,context): 
+    try:
+        month = (int(update.callback_query.data.split('_')[1]))
+        replyMarkup = eHelper.generateDayCalendar(month)
+        month = eHelper.getMonthName(month)
+    except AttributeError:
+        replyMarkup = eHelper.generateDayCalendar()
+        monnth = eHelper.getMonthNameName()
     context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text="These are the dates for {}.\nPick a date for which you would like to see the events of.".format(eHelper.getMonthName()),
-        reply_markup=eHelper.generateDayCalendar())
+        text=f"These are the dates for {month}.\nPick a date for which you would like to see the events of.",
+        reply_markup=replyMarkup)
+
+def monthCalendar(update,context):    
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="Pick a month!",
+        reply_markup=eHelper.generateMonthCalendar())        
 
 def setCalendar(update, context):
     calendars = gCal.getCalendars()    
@@ -74,22 +88,27 @@ def setCalendarID(update, context):
 
 #Gets the events of a particular day and sends it
 def sendDayEvent(update, context):
-    query = update.callback_query 
+    query = update.callback_query     
     date = query.data.split('_')
+    print(date)
+    return
     events = gCal.getEvents(date[1],date[2])['items']  
+    pprint(events)
     pprint(events)  
     if(len(events)):
         msg = eHelper.prepareEventsMessage(events) 
     else:
         msg = "There are no events scheduled for this date."    
-    query.edit_message_text(text=msg,reply_markup=eHelper.generateDayCalendar())
+    query.edit_message_text(text=msg,reply_markup=eHelper.generateDayCalendar(),parse_mode='Markdown')
 
 
 
     
 
-dispatcher.add_handler(CommandHandler('dayEvents',dayEvents))
+dispatcher.add_handler(CommandHandler('dayCalendar',dayCalendar))
+dispatcher.add_handler(CommandHandler('monthCalendar',monthCalendar))
 dispatcher.add_handler(CommandHandler('setCalendar',setCalendar))
+dispatcher.add_handler(CallbackQueryHandler(dayCalendar,pattern="^monthCalendar"))
 dispatcher.add_handler(CallbackQueryHandler(setCalendarID,pattern="^sc"))
 dispatcher.add_handler(CallbackQueryHandler(sendDayEvent,pattern="^dayevent"))
 

@@ -64,6 +64,8 @@ class eventHelper:
                 f"Event Description: {description}\n\n"
                 f"Starts at: {self.__humanizeForMessage(x['start']['dateTime'])}\n\n"
                 f"Ends at: {self.__humanizeForMessage(x['end']['dateTime'])}\n\n"
+                f"[More Info]({x['htmlLink']})\n\n"
+
                 "-------------------------\n\n"
             )            
         return msg
@@ -86,7 +88,7 @@ class eventHelper:
                 end = 30
             else:
                 end = 29        
-        dates = [InlineKeyboardButton(str(x).zfill(2), callback_data = "dayevent_{}_{}".format(self.createDate(year,month,x),self.createDate(year,month,x,opt='add',days=1)) ) for x in range(1,end)]
+        dates = [InlineKeyboardButton(str(x).zfill(2), callback_data = f"dayevent_{month}_{x}" ) for x in range(1,end)]
         n = 6 
         dates = [dates[i * n:(i + 1) * n] for i in range((len(dates) + n - 1) // n )] 
         return InlineKeyboardMarkup(dates)
@@ -97,4 +99,8 @@ class eventHelper:
         cals = [cals[i * n:(i + 1) * n] for i in range((len(cals) + n - 1) // n )]
         return InlineKeyboardMarkup(cals)
 
-
+    def generateMonthCalendar(self):
+        months = [InlineKeyboardButton(calendar.month_name[month],callback_data=f"monthCalendar_{month}") for month in range(1,13)]
+        n = 3
+        months = [months[i * n:(i + 1) * n] for i in range((len(months) + n - 1) // n )]        
+        return InlineKeyboardMarkup(months)
