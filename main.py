@@ -57,7 +57,7 @@ def dayCalendar(update,context):
         month = eHelper.getMonthName(month)
     except AttributeError:
         replyMarkup = eHelper.generateDayCalendar()
-        monnth = eHelper.getMonthNameName()
+        month = eHelper.getMonthName()
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=f"These are the dates for {month}.\nPick a date for which you would like to see the events of.",
@@ -89,17 +89,12 @@ def setCalendarID(update, context):
 #Gets the events of a particular day and sends it
 def sendDayEvent(update, context):
     query = update.callback_query     
-    date = query.data.split('_')
-    print(date)
-    return
-    events = gCal.getEvents(date[1],date[2])['items']  
-    pprint(events)
-    pprint(events)  
-    if(len(events)):
-        msg = eHelper.prepareEventsMessage(events) 
-    else:
-        msg = "There are no events scheduled for this date."    
-    query.edit_message_text(text=msg,reply_markup=eHelper.generateDayCalendar(),parse_mode='Markdown')
+    month,date = [int(x) for x in query.data.split('_')[1:3]]
+    startDate = eHelper.createDate(month=month,day=date)
+    endDate = eHelper.createDate(month=month,day=date,opt='add',days=1)    
+    events = gCal.getEvents(startDate,endDate)['items']
+    msg = eHelper.prepareEventsMessage(events) if len(events) >= 1 else "There are no events for this date"
+    query.edit_message_text(text=msg,reply_markup=eHelper.generateDayCalendar(month=month),parse_mode='Markdown')
 
 
 
